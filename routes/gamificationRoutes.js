@@ -6,5 +6,6 @@ router.post("/points", gamificationController.awardPoints);
 router.post("/achievement", gamificationController.addAchievement);
 router.get("/leaderboards", gamificationController.getLeaderboard);
 router.post("/rankup", gamificationController.incrementScore);
+router.post("/increment-streak", gamificationController.incrementStreak);
 
-module.exports = router; // Export the router correctly
+module.exports = router; 
