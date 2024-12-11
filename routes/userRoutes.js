@@ -4,11 +4,11 @@ const userController = require('../controllers/userController')
 
 const verifToken = require("../middleware/verifToken");
 
+router.get("/users", userController.getAllUsers);
 router.post("/user", userController.createUser);
-router.get("/user", userController.getAllUsers);
-router.get("/user/:username/email", userController.getUserEmail);
-router.get("/user/:id", verifToken, userController.getUsersbyID);
-router.put("/user/:id", verifToken, userController.updateUser);
+router.get("/user", verifToken, userController.getUsersbyID);
+router.put("/user", verifToken, userController.updateUser);
 router.delete("/user/:id", userController.deleteUser);
+router.get("/user/:id/email", userController.getUserEmail);
 
 module.exports = router;

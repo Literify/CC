@@ -72,7 +72,7 @@ exports.getAllUsers = async (req, res) => {
 };
 
 exports.getUsersbyID = async (req, res) => {
-  const { id } = req.params;
+  const id = req.user;
 
   try {
     // Fetch user by ID
@@ -97,7 +97,7 @@ exports.getUsersbyID = async (req, res) => {
 };
 
 exports.updateUser = async(req, res) => {
-  const { id } = req.params;
+  const id = req.user;
   const updates = req.body;
 
   try {
