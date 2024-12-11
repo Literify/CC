@@ -107,13 +107,15 @@ const uploadAndPredict = async (req, res) => {
 
                 res.status(200).json({
                     message: 'File uploaded and processed successfully',
-                    fileUrl: publicUrl,
-                    prediction: response.data,
+                    data: {
+                      fileUrl: publicUrl,
+                      prediction: response.data,
+                    }
                 });
             } catch (mlError) {
                 res.status(500).json({
-                    error: 'Error calling ML endpoint',
-                    details: mlError.response ? mlError.response.data : mlError.message,
+                    message: 'Error calling ML endpoint',
+                    error: mlError.response ? mlError.response.data : mlError.message,
                 });
             }
         });
