@@ -118,3 +118,23 @@ exports.deleteUser = async(req, res) => {
     res.status(500).send({ message: "Error deleting user", error });
   }
 }
+
+exports.getUserEmail= async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    const hasUsername = await userCollection.where("username", "==", username).get();
+    if (hasUsername.empty) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    const userEmail = userResponse.docs[0].data().email;
+    if (!userEmail) {
+      return res.status(404).send({ message: "Email not found" });
+    }
+    
+    res.status(200).send(userEmail);
+  } catch (error) {
+    res.status(500).send({ message: "Error fetching user", error });
+  }
+}
