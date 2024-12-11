@@ -4,18 +4,28 @@ const bcrypt = require("bcryptjs");
 const userCollection = db.collection("users");
 
 exports.createUser = async (req, res) => {
-  const { email, username, password, firstName, lastName, level, id } = req.body;
+  const { id, email, username, firstName, lastName, level } = req.body;
 
-  if (!email || !password || !firstName || !lastName || !level) {
+  if (!id || !email || !firstName || !lastName || !level) {
     return res.status(400).send({ message: "All fields are required" });
   }
 
+  const isEmailExist = await userCollection.where("email", "==", email).get();
+  const isUsernameExist = await userCollection.where("username", "==", username).get();
+
+  if (!isEmailExist.empty) {
+    return res.status(400).send({ message: "Email already exists" });
+  }
+
+  if (!isUsernameExist.empty) {
+    return res.status(400).send({ message: "Username already exists" });
+  }
+
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = {
+      id,
       email,
       username,
-      password: hashedPassword,
       firstName,
       lastName,
       level: level || "beginner",
