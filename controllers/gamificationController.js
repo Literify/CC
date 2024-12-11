@@ -1,7 +1,6 @@
 const express = require("express");
-const router = express.Router();
 const db = require("../config/db");
-
+const axios = require("axios");
 const userCollection = db.collection("users");
 
 /**
@@ -84,7 +83,7 @@ const initializeScoreDoc = async (userUid) => {
 exports.awardPoints = async (req, res) => {
   const { points = 1, achievement } = req.body;
 
-  const userId = req.user.id
+  const userId = req.user;
   try {
     // Validate points range
     const safePoints = Math.max(0, Math.min(points, 20));
@@ -122,7 +121,7 @@ exports.awardPoints = async (req, res) => {
 exports.addAchievement = async (req, res) => {
   const { points = 10, achievement } = req.body;
 
-  const userId = req.user.id
+  const userId = req.user;
 
   try {
     // Validate points range
@@ -255,9 +254,9 @@ const checkRankUp = (score) => {
 };
 
 exports.incrementScore = async (req, res) => {
-  const { points } = req.body; 
+  const { points } = req.body;
 
-  const userId = req.user.id
+  const userId = req.user;
 
   try {
     // Validate points range
@@ -271,6 +270,7 @@ exports.incrementScore = async (req, res) => {
 
     // Update score
     const scoreRef = db.collection("scores").doc(userId);
+    const userRef = db.collection("users").doc(userId);
     const snap = await scoreRef.get();
     const data = snap.exists ? snap.data() : {};
 
@@ -281,10 +281,30 @@ exports.incrementScore = async (req, res) => {
     const newRank = checkRankUp(data.score);
     const userRank = data.rank || 1;
 
+    let responseData = {
+      score: data.score,
+      rank: data.rank || userRank,
+      rankUpImageUrl: data.rankUpImageUrl || null,
+    };
+
     if (newRank.rank > userRank) {
       // kalo user ranked up
       data.rank = newRank.rank;
       data.rankUpImageUrl = newRank.imageUrl;
+
+      const response = await axios.get(
+        "https://random-word-api.herokuapp.com/word"
+      );
+      const randomWord = response.data[0];
+
+      const userSnap = await userRef.get();
+      const userData = userSnap.exists ? userSnap.data() : {};
+
+      userData.achievements = userData.achievements || [];
+      userData.achievements.push(randomWord);
+      await userRef.set(userData, { merge: true });
+
+      responseData.achievement = randomWord;
     }
 
     // Save updated data
@@ -293,11 +313,7 @@ exports.incrementScore = async (req, res) => {
     // Response
     res.status(200).send({
       message: "Score incremented successfully.",
-      data: {
-        score: data.score,
-        rank: data.rank || userRank,
-        rankUpImageUrl: data.rankUpImageUrl || null,
-      },
+      data: responseData,
     });
   } catch (error) {
     res.status(400).send({ message: error.message });
@@ -308,46 +324,53 @@ exports.incrementScore = async (req, res) => {
  * Track streaks for completed books real
  */
 exports.trackStreak = async (req, res) => {
-  const { id } = req.params;
+  const { completedNumber } = req.body;
+  const userId = req.user;
 
   try {
-    const scoreRef = db.collection("scores").doc(id);
+    const userRef = db.collection("users").doc(userId);
+    const scoreRef = db.collection("scores").doc(userId);
     const snap = await scoreRef.get();
     const data = snap.exists ? snap.data() : {};
 
     const now = new Date();
     const today = now.toISOString().split("T")[0]; // Get current date in YYYY-MM-DD format
 
-    // Initialize lastCompletionDate if not present in database
-    if (!data.lastCompletionDate) {
-      data.lastCompletionDate = today;
-      data.streak = 1; // Start a new streak
-    } else {
-      const lastCompletionDate = new Date(data.lastCompletionDate);
-      const differenceInDays = Math.floor(
-        (now - lastCompletionDate) / (1000 * 60 * 60 * 24)
-      );
+    data.points = data.points || 0; // Start points at 0 if undefined
+    data.lastCompletionDate = data.lastCompletionDate || today;
+    data.streak = data.streak || 0; // Start streak at 0 if undefined
 
-      if (differenceInDays === 1) {
-        // User completed a book the next day, increase streak
-        data.streak = (data.streak || 0) + 1;
-      } else if (differenceInDays > 1) {
-        // Streak is broken, reset to 1
-        data.streak = 1;
-      }
+    const lastCompletionDate = new Date(data.lastCompletionDate);
+    const differenceInDays = Math.floor(
+      (now - lastCompletionDate) / (1000 * 60 * 60 * 24)
+    );
+
+    if (differenceInDays === 1) {
+      // User completed a book the next day, increase streak
+      data.streak += 1;
+    } else if (differenceInDays > 1) {
+      // Streak is broken, reset to 1
+      data.streak = 1;
     }
 
-    // Update the lastCompletionDate
     data.lastCompletionDate = today;
 
-    // Save updated data
+    data.points += completedNumber;
+
+    const userSnap = await userRef.get();
+    const userData = userSnap.exists ? userSnap.data() : {};
+    userData.booksRead = (userData.booksRead || 0) + completedNumber;
+
+    await userRef.set(userData);
     await scoreRef.set(data);
 
     res.status(200).send({
       message: "Streak tracked successfully.",
       data: {
+        points: data.points,
         streak: data.streak,
         lastCompletionDate: data.lastCompletionDate,
+        booksRead: userData.booksRead,
       },
     });
   } catch (error) {
