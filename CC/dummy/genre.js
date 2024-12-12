@@ -2,17 +2,18 @@ const express = require('express');
 const app = express();
 
 const genres = [
-    { genre: "Adventure", imageUrl: "https://storage.googleapis.com/genre_literify/Genre/Adventure.png" },
-    { genre: "Comedy", imageUrl: "https://storage.googleapis.com/genre_literify/Genre/Comedy.png" },
-    { genre: "Crime", imageUrl: "https://storage.googleapis.com/genre_literify/Genre/Crime.png" },
-    { genre: "Drama", imageUrl: "https://storage.googleapis.com/genre_literify/Genre/Drama.png" },
-    { genre: "Education", imageUrl: "https://storage.googleapis.com/genre_literify/Genre/Education.png" },
-    { genre: "Fantasy", imageUrl: "https://storage.googleapis.com/genre_literify/Genre/Fantasy.png" },
-    { genre: "Fiksi", imageUrl: "https://storage.googleapis.com/genre_literify/Genre/Fiksi.png" },
-    { genre: "Horor", imageUrl: "https://storage.googleapis.com/genre_literify/Genre/Horor.png" },
-    { genre: "Non-Fiksi", imageUrl: "https://storage.googleapis.com/genre_literify/Genre/Non-Fiksi.png" },
-    { genre: "Self-Improvement", imageUrl: "https://storage.googleapis.com/genre_literify/Genre/Self-Improvement.png" }
+    { genre: "Biography & Autobiography", imageUrl: "https://storage.googleapis.com/genre_literify/genre/Biography%20%26%20Autobiography.png" },
+    { genre: "Business & Economics", imageUrl: "https://storage.googleapis.com/genre_literify/genre/Business%20%26%20Economics.png" },
+    { genre: "Computers", imageUrl: "https://storage.googleapis.com/genre_literify/genre/Computers.png" },
+    { genre: "Cooking", imageUrl: "https://storage.googleapis.com/genre_literify/genre/Cooking.png" },
+    { genre: "Fiction", imageUrl: "https://storage.googleapis.com/genre_literify/genre/Fiction.png" },
+    { genre: "History", imageUrl: "https://storage.googleapis.com/genre_literify/genre/History.png" },
+    { genre: "Juvenile Fiction", imageUrl: "https://storage.googleapis.com/genre_literify/genre/Juvenile%20Fiction.png" },
+    { genre: "Religion", imageUrl: "https://storage.googleapis.com/genre_literify/genre/Religion.png" },
+    { genre: "Self-Help", imageUrl: "https://storage.googleapis.com/genre_literify/genre/Self-Help.png" },
+    { genre: "Social Science", imageUrl: "https://storage.googleapis.com/genre_literify/genre/Social%20Science.png" }
 ];
+
 
 const genre = async (req, res) => {
     res.json({
